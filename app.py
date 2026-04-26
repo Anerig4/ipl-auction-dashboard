@@ -208,58 +208,64 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("""
     <div style='color:#8b949e; font-size:.75rem; line-height:1.8'>
-        <b style='color:#e6edf3'>Required CSV files:</b><br>
-        • ipl_auction_2023.csv<br>
-        • ipl_player_lifetime.csv<br>
-        • ipl_points_table.csv<br><br>
+        <b style='color:#e6edf3'>CSV files (auto-loaded):</b><br>
+        📁 data/ipl_auction_2023.csv<br>
+        📁 data/ipl_player_lifetime.csv<br>
+        📁 data/ipl_points_table.csv<br><br>
         <b style='color:#e6edf3'>Data source:</b><br>
         Kaggle IPL Datasets
     </div>
     """, unsafe_allow_html=True)
 
 
-# ── upload + load data ─────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("---")
-    st.markdown("**📂 Upload your CSV files**")
-    auction_file = st.file_uploader("Auction CSV",      type="csv", key="auction")
-    player_file  = st.file_uploader("Player Stats CSV", type="csv", key="player")
-    points_file  = st.file_uploader("Points Table CSV", type="csv", key="points")
+# ── auto-load from data/ folder ────────────────────────────────────
+import os, pathlib
 
-if not auction_file or not player_file or not points_file:
+DATA_DIR     = pathlib.Path(__file__).parent / "data"
+AUCTION_PATH = DATA_DIR / "ipl_auction_2023.csv"
+PLAYER_PATH  = DATA_DIR / "ipl_player_lifetime.csv"
+POINTS_PATH  = DATA_DIR / "ipl_points_table.csv"
+
+missing = [str(p) for p in [AUCTION_PATH, PLAYER_PATH, POINTS_PATH] if not p.exists()]
+
+if missing:
     st.markdown("# IPL AUCTION 2023")
     st.markdown("### 🏏 Auction Intelligence Dashboard")
     st.markdown("---")
-    st.info("👈 **Upload all 3 CSV files** in the sidebar to begin analysis.")
+    st.error("❌ **Missing CSV files.** Place the following files inside the `data/` folder:")
+    for m in missing:
+        st.code(m)
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown("""
-        <div style='background:#161b22; border:1px solid #30363d; border-radius:12px; padding:20px;'>
+        <div style='background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px'>
             <div style='font-size:2rem'>📋</div>
-            <div style='font-weight:600; margin:8px 0 4px'>Auction Data</div>
-            <div style='color:#8b949e; font-size:.85rem'>ipl_auction_2023.csv<br>Players, Teams, Prices</div>
+            <div style='font-weight:600;margin:8px 0 4px'>Auction Data</div>
+            <div style='color:#8b949e;font-size:.85rem'>data/ipl_auction_2023.csv</div>
         </div>""", unsafe_allow_html=True)
     with col2:
         st.markdown("""
-        <div style='background:#161b22; border:1px solid #30363d; border-radius:12px; padding:20px;'>
+        <div style='background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px'>
             <div style='font-size:2rem'>🏃</div>
-            <div style='font-weight:600; margin:8px 0 4px'>Player Stats</div>
-            <div style='color:#8b949e; font-size:.85rem'>ipl_player_lifetime.csv<br>Runs, Wickets, Matches</div>
+            <div style='font-weight:600;margin:8px 0 4px'>Player Stats</div>
+            <div style='color:#8b949e;font-size:.85rem'>data/ipl_player_lifetime.csv</div>
         </div>""", unsafe_allow_html=True)
     with col3:
         st.markdown("""
-        <div style='background:#161b22; border:1px solid #30363d; border-radius:12px; padding:20px;'>
+        <div style='background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px'>
             <div style='font-size:2rem'>🏆</div>
-            <div style='font-weight:600; margin:8px 0 4px'>Points Table</div>
-            <div style='color:#8b949e; font-size:.85rem'>ipl_points_table.csv<br>Season standings</div>
+            <div style='font-weight:600;margin:8px 0 4px'>Points Table</div>
+            <div style='color:#8b949e;font-size:.85rem'>data/ipl_points_table.csv</div>
         </div>""", unsafe_allow_html=True)
     st.stop()
 
 
 # ── load with spinner ──────────────────────────────────────────────
 with st.spinner("⚙️ Loading and processing data..."):
-    df, points_table, warnings_list = load_all_data(auction_file, player_file, points_file)
+    df, points_table, warnings_list = load_all_data(
+        str(AUCTION_PATH), str(PLAYER_PATH), str(POINTS_PATH)
+    )
 
 if warnings_list:
     for w in warnings_list:
