@@ -9,7 +9,7 @@ import streamlit as st
 
 
 @st.cache_data(show_spinner=False)
-def load_all_data(auction_file, player_file, points_file):
+def load_all_data(auction_file: str, player_file: str, points_file: str):
     warnings = []
 
     try:
