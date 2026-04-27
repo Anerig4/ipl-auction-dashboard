@@ -9,7 +9,7 @@ import streamlit as st
 
 
 @st.cache_data(show_spinner=False)
-def load_all_data(auction_file: str, player_file: str, points_file: str):
+def load_all_data(auction_file, player_file, points_file):
     warnings = []
 
     try:
@@ -76,9 +76,19 @@ def _load_auction(f):
     else:
         df["Capped"] = 0
 
-    # keep only sold players
-    df = df[df["Price"] > 0].copy().reset_index(drop=True)
-    return df
+    # ── keep ONLY actually sold players ───────────────────────────
+    # The dataset uses status = "SOLD" / "UNSOLD". UNSOLD players
+    # still have their base price (e.g. 150L) which was causing
+    # CSK to appear as if they bought 96 players.
+    if "Sold_Status" in df.columns:
+        before = len(df)
+        df = df[df["Sold_Status"].str.strip().str.upper() == "SOLD"].copy()
+        print(f"  → Dropped {before - len(df)} UNSOLD players. Kept: {len(df)} SOLD players.")
+    else:
+        # fallback: drop rows where price is suspiciously the base price (150L)
+        df = df[df["Price"] > 0].copy()
+
+    return df.reset_index(drop=True)
 
 
 def _load_player_stats(f):
