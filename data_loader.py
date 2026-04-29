@@ -82,8 +82,8 @@ def _load_auction(f):
     # CSK to appear as if they bought 96 players.
     if "Sold_Status" in df.columns:
         before = len(df)
-        df = df[df["Sold_Status"].str.strip().str.upper() == "SOLD"].copy()
-        print(f"  → Dropped {before - len(df)} UNSOLD players. Kept: {len(df)} SOLD players.")
+        df = df[df["Sold_Status"].str.strip().str.upper().isin(["SOLD", "RETAINED"])].copy()
+        print(f"  → Dropped {before - len(df)} UNSOLD players. Kept: {len(df)} (SOLD + RETAINED).")
     else:
         # fallback: drop rows where price is suspiciously the base price (150L)
         df = df[df["Price"] > 0].copy()
