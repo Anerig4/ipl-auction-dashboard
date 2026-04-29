@@ -5,7 +5,7 @@ from plot_utils import dark_fig, PALETTE, section_header, interp_box
 
 
 def render(df):
-    section_header("UNCAPPED GEMS"")
+    section_header("UNCAPPED GEMS")
 
     uncapped = df[df["Capped"] == 0].copy()
 
